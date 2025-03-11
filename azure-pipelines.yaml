@@ -23,7 +23,7 @@ stages:
       displayName: "Login to Azure"
       inputs:
         azureSubscription: $(azureServiceConnection)
-        scriptType: bash
+        scriptType: pscore
         scriptLocation: inlineScript
         inlineScript: |
           az account show  # Verify Azure authentication
@@ -32,7 +32,7 @@ stages:
       displayName: "Deploy Storage Accounts"
       inputs:
         azureSubscription: $(azureServiceConnection)
-        scriptType: bash
+        scriptType: pscore
         scriptLocation: inlineScript
         inlineScript: |
           az deployment group create --resource-group $(resourceGroup) \
@@ -43,7 +43,7 @@ stages:
       displayName: "Deploy Virtual Machine"
       inputs:
         azureSubscription: $(azureServiceConnection)
-        scriptType: bash
+        scriptType: pscore
         scriptLocation: inlineScript
         inlineScript: |
           az deployment group create --resource-group $(resourceGroup) \
