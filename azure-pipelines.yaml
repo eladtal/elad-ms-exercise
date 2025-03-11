@@ -35,8 +35,8 @@ stages:
         scriptType: pscore
         scriptLocation: inlineScript
         inlineScript: |
-          az deployment group create --resource-group $(resourceGroup) \
-          --template-file $(storageTemplate) \
+          az deployment group create --resource-group $(resourceGroup) `
+          --template-file $(storageTemplate) `
           --parameters storageAccount1Name=eladstorageacct12345 storageAccount2Name=eladstorageacct67890 location=$(location)
 
     - task: AzureCLI@2
@@ -46,7 +46,7 @@ stages:
         scriptType: pscore
         scriptLocation: inlineScript
         inlineScript: |
-          az deployment group create --resource-group $(resourceGroup) \
-          --template-file $(vmTemplate) \
-          --parameters vmName=myVM adminUsername=azureUser adminPassword='P@ssw0rd!' \
+          az deployment group create --resource-group $(resourceGroup) `
+          --template-file $(vmTemplate) `
+          --parameters vmName=myVM adminUsername=azureUser adminPassword='P@ssw0rd!' `
                        networkInterfaceName=myVMnic vnetName=elad-vnet subnetName=elad-subnet location=$(location)
