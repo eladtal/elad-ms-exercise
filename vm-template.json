@@ -168,31 +168,35 @@
           }
       },
       {
-          "type": "Microsoft.Network/networkInterfaces",
-          "apiVersion": "2022-09-01",
-          "name": "[parameters('networkInterfaceName')]",
-          "location": "[parameters('location')]",
-          "properties": {
-              "ipConfigurations": [
-                  {
-                      "name": "ipconfig1",
-                      "properties": {
-                          "subnet": {
-                              "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('subnetName'))]"
-                          },
-                          "privateIPAllocationMethod": "Dynamic",
-                          "publicIPAddress": {
-                              "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIpName'))]"
-                          }
-                      }
-                  }
-              ]
-          },
-          "dependsOn": [
-              "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIpName'))]",
-              "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
-          ]
-      },
+        "type": "Microsoft.Network/networkInterfaces",
+        "apiVersion": "2022-09-01",
+        "name": "[parameters('networkInterfaceName')]",
+        "location": "[parameters('location')]",
+        "properties": {
+            "ipConfigurations": [
+                {
+                    "name": "ipconfig1",
+                    "properties": {
+                        "subnet": {
+                            "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('subnetName'))]"
+                        },
+                        "privateIPAllocationMethod": "Dynamic",
+                        "publicIPAddress": {
+                            "id": "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIpName'))]"
+                        }
+                    }
+                }
+            ],
+            "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('vmName'), '-nsg'))]"
+            }
+        },
+        "dependsOn": [
+            "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIpName'))]",
+            "[resourceId('Microsoft.Network/networkSecurityGroups', concat(parameters('vmName'), '-nsg'))]",
+            "[resourceId('Microsoft.Network/virtualNetworks', parameters('vnetName'))]"
+        ]
+    },
       {
           "type": "Microsoft.Compute/virtualMachines",
           "apiVersion": "2022-08-01",
@@ -229,6 +233,42 @@
           "dependsOn": [
               "[resourceId('Microsoft.Network/networkInterfaces', parameters('networkInterfaceName'))]"
           ]
-      }
+      },
+      {
+        "type": "Microsoft.Network/networkSecurityGroups",
+        "apiVersion": "2022-09-01",
+        "name": "[concat(parameters('vmName'), '-nsg')]",
+        "location": "[parameters('location')]",
+        "properties": {
+            "securityRules": [
+                {
+                    "name": "AllowMyIP",
+                    "properties": {
+                        "priority": 100,
+                        "direction": "Inbound",
+                        "access": "Allow",
+                        "protocol": "*",
+                        "sourcePortRange": "*",
+                        "destinationPortRange": "22",
+                        "sourceAddressPrefix": "89.138.185.14",
+                        "destinationAddressPrefix": "*"
+                    }
+                },
+                {
+                    "name": "DenyAllInbound",
+                    "properties": {
+                        "priority": 300,
+                        "direction": "Inbound",
+                        "access": "Deny",
+                        "protocol": "*",
+                        "sourcePortRange": "*",
+                        "destinationPortRange": "*",
+                        "sourceAddressPrefix": "*",
+                        "destinationAddressPrefix": "*"
+                    }
+                }
+            ]
+        }
+    }    
   ]
 }
