@@ -162,9 +162,9 @@
           "apiVersion": "2022-09-01",
           "name": "[parameters('publicIpName')]",
           "location": "[parameters('location')]",
+          "sku": { "name": "Standard" }, 
           "properties": {
-              "publicIPAllocationMethod": "Static",
-              "sku": { "name": "Standard" }
+              "publicIPAllocationMethod": "Static"
           }
       },
       {
