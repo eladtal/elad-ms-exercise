@@ -1,3 +1,59 @@
+# trigger:
+# - main
+
+# pool:
+#   name: elad-pc
+
+# variables:
+#   azureServiceConnection: 'elad-service-connect'
+#   resourceGroup: 'elad-rg'
+#   location: 'eastus'
+#   storageTemplate: 'storage-template.json'
+#   vmTemplate: 'vm-template.json'
+#   publicIpName: 'elad-public-ip'
+
+# stages:
+# - stage: Deploy_Resources
+#   displayName: Deploy Storage Accounts & VM
+#   jobs:
+#   - job: Deploy
+#     displayName: Deploy Storage and VM
+#     steps:
+
+#     - task: AzureCLI@2
+#       displayName: "Login to Azure"
+#       inputs:
+#         azureSubscription: $(azureServiceConnection)
+#         scriptType: pscore
+#         scriptLocation: inlineScript
+#         inlineScript: |
+#           az account show  # Verify Azure authentication
+
+#     - task: AzureCLI@2
+#       displayName: "Deploy Storage Accounts"
+#       inputs:
+#         azureSubscription: $(azureServiceConnection)
+#         scriptType: pscore
+#         scriptLocation: inlineScript
+#         inlineScript: |
+#           az deployment group create --resource-group $(resourceGroup) `
+#           --template-file $(storageTemplate) `
+#           --parameters storageAccount1Name=eladstorageacct12345 storageAccount2Name=eladstorageacct67890 location=$(location)
+
+#     - task: AzureCLI@2
+#       displayName: "Deploy Virtual Machine"
+#       inputs:
+#         azureSubscription: $(azureServiceConnection)
+#         scriptType: pscore
+#         scriptLocation: inlineScript
+#         inlineScript: |
+#           az deployment group create --resource-group $(resourceGroup) `
+#           --template-file $(vmTemplate) `
+#           --parameters vmName=myVM adminUsername=azureUser adminPassword='P@ssw0rd!' `
+#                        networkInterfaceName=myVMnic publicIpName=$(publicIpName) `
+#                        vnetName=elad-vnet subnetName=elad-subnet location=$(location)
+
+
 trigger:
 - main
 
@@ -52,3 +108,35 @@ stages:
           --parameters vmName=myVM adminUsername=azureUser adminPassword='P@ssw0rd!' `
                        networkInterfaceName=myVMnic publicIpName=$(publicIpName) `
                        vnetName=elad-vnet subnetName=elad-subnet location=$(location)
+
+- stage: Execute_Blob_Copy
+  displayName: Execute Blob Copy Script
+  dependsOn: Deploy_Resources  # Ensures this runs only after resources are deployed
+  jobs:
+  - job: RunBlobCopy
+    displayName: Run Python Script for Blob Copy
+    steps:
+
+    - task: UsePythonVersion@0
+      displayName: "Use Python 3.x"
+      inputs:
+        versionSpec: "3.x"
+
+    - script: |
+        python -m pip install --upgrade pip
+        pip install azure-storage-blob python-dotenv
+      displayName: "Install Python Dependencies"
+
+    - script: |
+        echo "Setting environment variables..."
+        echo "STORAGE_ACCOUNT_A=$(STORAGE_ACCOUNT_A)" >> $(Build.Bash)
+        echo "STORAGE_ACCOUNT_B=$(STORAGE_ACCOUNT_B)" >> $(Build.Bash)
+        echo "CONNECTION_STRING_A=$(CONNECTION_STRING_A)" >> $(Build.Bash)
+        echo "CONNECTION_STRING_B=$(CONNECTION_STRING_B)" >> $(Build.Bash)
+        echo "SAS_TOKEN=$(SAS_TOKEN)" >> $(Build.Bash)
+      displayName: "Set Environment Variables"
+
+    - script: |
+        echo "Running Blob Copy Script..."
+        python blobs.py
+      displayName: "Run Blob Copy Script"
