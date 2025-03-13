@@ -67,6 +67,8 @@ variables:
   storageTemplate: 'storage-template.json'
   vmTemplate: 'vm-template.json'
   publicIpName: 'elad-public-ip'
+  vmUser: 'azureUser'  # Change if needed
+  vmPublicIp: 'YOUR_VM_PUBLIC_IP'  # Replace with the actual VM public IP
 
 stages:
 - stage: Deploy_Resources
@@ -75,7 +77,7 @@ stages:
   - job: Deploy
     displayName: Deploy Storage and VM
     steps:
-
+    
     - task: AzureCLI@2
       displayName: "Login to Azure"
       inputs:
@@ -105,38 +107,26 @@ stages:
         inlineScript: |
           az deployment group create --resource-group $(resourceGroup) `
           --template-file $(vmTemplate) `
-          --parameters vmName=myVM adminUsername=azureUser adminPassword='P@ssw0rd!' `
+          --parameters vmName=myVM adminUsername=$(vmUser) adminPassword='P@ssw0rd!' `
                        networkInterfaceName=myVMnic publicIpName=$(publicIpName) `
                        vnetName=elad-vnet subnetName=elad-subnet location=$(location)
 
 - stage: Execute_Blob_Copy
-  displayName: Execute Blob Copy Script
-  dependsOn: Deploy_Resources  # Ensures this runs only after resources are deployed
+  displayName: Execute Blob Copy Script on VM
+  dependsOn: Deploy_Resources
   jobs:
   - job: RunBlobCopy
-    displayName: Run Python Script for Blob Copy
+    displayName: Run Blob Copy Script on Azure VM
     steps:
 
-    - task: UsePythonVersion@0
-      displayName: "Use Python 3.x"
+    - task: SSH@0
+      displayName: "Run Blob Copy Script on VM"
       inputs:
-        versionSpec: "3.x"
-
-    - script: |
-        python -m pip install --upgrade pip
-        pip install azure-storage-blob python-dotenv
-      displayName: "Install Python Dependencies"
-
-    - script: |
-        echo "Setting environment variables..."
-        echo "STORAGE_ACCOUNT_A=$(STORAGE_ACCOUNT_A)" >> $(Build.Bash)
-        echo "STORAGE_ACCOUNT_B=$(STORAGE_ACCOUNT_B)" >> $(Build.Bash)
-        echo "CONNECTION_STRING_A=$(CONNECTION_STRING_A)" >> $(Build.Bash)
-        echo "CONNECTION_STRING_B=$(CONNECTION_STRING_B)" >> $(Build.Bash)
-        echo "SAS_TOKEN=$(SAS_TOKEN)" >> $(Build.Bash)
-      displayName: "Set Environment Variables"
-
-    - script: |
-        echo "Running Blob Copy Script..."
-        python blobs.py
-      displayName: "Run Blob Copy Script"
+        sshEndpoint: "AzureVM-SSH"  # Configure this in Azure DevOps Service Connections
+        runOptions: "inline"
+        inline: |
+          echo "Connecting to Azure VM..."
+          python3 -m pip install --upgrade pip
+          pip3 install azure-storage-blob python-dotenv
+          echo "Executing blobs.py..."
+          python3 /home/$(vmUser)/blobs.py
