@@ -62,14 +62,22 @@ pool:
 
 variables:
   - group: StorageSecrets
-  azureServiceConnection: 'elad-service-connect'
-  resourceGroup: 'elad-rg'
-  location: 'eastus'
-  storageTemplate: 'storage-template.json'
-  vmTemplate: 'vm-template.json'
-  publicIpName: 'elad-public-ip'
-  vmUser: 'azureUser'  
-  vmPublicIp: '172.190.211.170'
+  - name: azureServiceConnection
+    value: 'elad-service-connect'
+  - name: resourceGroup
+    value: 'elad-rg'
+  - name: location
+    value: 'eastus'
+  - name: storageTemplate
+    value: 'storage-template.json'
+  - name: vmTemplate
+    value: 'vm-template.json'
+  - name: publicIpName
+    value: 'elad-public-ip'
+  - name: vmUser
+    value: 'azureUser'
+  - name: vmPublicIp
+    value: '172.190.211.170'
 
 stages:
 - stage: Deploy_Resources
