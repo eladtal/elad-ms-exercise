@@ -134,20 +134,24 @@ stages:
         sshEndpoint: "sshvm"
         runOptions: "inline"
         inline: |
-          echo "Copying script to VM..."
-          scp blobs.py $(vmUser)@$(vmPublicIp):/home/$(vmUser)/blobs.py
+          echo "Creating script directory if not exists..."
+          mkdir -p /home/$(vmUser)/scripts
+          
+          echo "Copying blobs.py to VM..."
+          scp blobs.py $(vmUser)@$(vmPublicIp):/home/$(vmUser)/scripts/blobs.py
           
           echo "Setting up environment variables..."
-          echo "export STORAGE_ACCOUNT_A=$(STORAGE_ACCOUNT_A)" >> ~/.bashrc
-          echo "export STORAGE_ACCOUNT_B=$(STORAGE_ACCOUNT_B)" >> ~/.bashrc
-          echo "export CONNECTION_STRING_A=$(CONNECTION_STRING_A)" >> ~/.bashrc
-          echo "export CONNECTION_STRING_B=$(CONNECTION_STRING_B)" >> ~/.bashrc
-          echo "export SAS_TOKEN=$(SAS_TOKEN)" >> ~/.bashrc
+          echo "export STORAGE_ACCOUNT_A='$(STORAGE_ACCOUNT_A)'" >> ~/.bashrc
+          echo "export STORAGE_ACCOUNT_B='$(STORAGE_ACCOUNT_B)'" >> ~/.bashrc
+          echo "export CONNECTION_STRING_A='$(CONNECTION_STRING_A)'" >> ~/.bashrc
+          echo "export CONNECTION_STRING_B='$(CONNECTION_STRING_B)'" >> ~/.bashrc
+          echo "export SAS_TOKEN='$(SAS_TOKEN)'" >> ~/.bashrc
           source ~/.bashrc
 
-          echo "Installing dependencies..."
-          python3 -m pip install --upgrade pip
+          echo "Ensuring Python dependencies are installed..."
+          sudo apt update && sudo apt install -y python3 python3-pip
+          pip3 install --upgrade pip
           pip3 install azure-storage-blob python-dotenv
 
           echo "Executing blobs.py..."
-          python3 /home/$(vmUser)/blobs.py
+          python3 /home/$(vmUser)/scripts/blobs.py
