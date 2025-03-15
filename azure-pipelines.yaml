@@ -131,7 +131,7 @@ stages:
     - task: SSH@0
       displayName: "Run Blob Copy Script on VM"
       inputs:
-        sshEndpoint: "sshmyvm"  # Configure this in Azure DevOps Service Connections
+        sshEndpoint: "sshvm"
         runOptions: "inline"
         inline: |
           echo "Copying script to VM..."
