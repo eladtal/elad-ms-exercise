@@ -63,29 +63,28 @@ stages:
           --parameters vmName=myVM adminUsername=$(vmUser) adminPassword='P@ssw0rd!' `
                        networkInterfaceName=myVMnic publicIpName=$(publicIpName) `
                        vnetName=elad-vnet subnetName=elad-subnet location=$(location)
-
 - stage: Execute_Blob_Copy
   displayName: Execute Blob Copy Script on VM
   dependsOn: Deploy_Resources
   jobs:
-  - job: RunBlobCopy
-    displayName: Run Blob Copy Script on Azure VM
+  - job: CopyAndRunScript
+    displayName: Copy and Execute Blob Copy Script on Azure VM
     steps:
 
-    - task: SSH@0
-      displayName: "Run Blob Copy Script on VM"
+    - task: CopyFilesOverSSH@0
+      displayName: "Copy blobs.py to VM"
       inputs:
-        sshEndpoint: "sshvm"
+        sshEndpoint: "AzureVM-SSH"
+        sourceFolder: "$(Build.SourcesDirectory)"
+        contents: "blobs.py"
+        targetFolder: "/home/$(vmUser)/scripts"
+
+    - task: SSH@0
+      displayName: "Execute Blob Copy Script on VM"
+      inputs:
+        sshEndpoint: "AzureVM-SSH"
         runOptions: "inline"
         inline: |
-          echo "Creating script directory if not exists..."
-          mkdir -p /home/$(vmUser)/scripts
-
-          echo "Copying blobs.py to VM using inline method..."
-          cat << 'EOF' > /home/$(vmUser)/scripts/blobs.py
-          $(cat blobs.py)
-          EOF
-          
           echo "Setting up environment variables..."
           echo "export STORAGE_ACCOUNT_A='$(STORAGE_ACCOUNT_A)'" >> ~/.bashrc
           echo "export STORAGE_ACCOUNT_B='$(STORAGE_ACCOUNT_B)'" >> ~/.bashrc
@@ -101,3 +100,41 @@ stages:
 
           echo "Executing blobs.py..."
           python3 /home/$(vmUser)/scripts/blobs.py
+
+# - stage: Execute_Blob_Copy
+#   displayName: Execute Blob Copy Script on VM
+#   dependsOn: Deploy_Resources
+#   jobs:
+#   - job: RunBlobCopy
+#     displayName: Run Blob Copy Script on Azure VM
+#     steps:
+
+#     - task: SSH@0
+#       displayName: "Run Blob Copy Script on VM"
+#       inputs:
+#         sshEndpoint: "sshvm"
+#         runOptions: "inline"
+#         inline: |
+#           echo "Creating script directory if not exists..."
+#           mkdir -p /home/$(vmUser)/scripts
+
+#           echo "Copying blobs.py to VM using inline method..."
+#           cat << 'EOF' > /home/$(vmUser)/scripts/blobs.py
+#           $(cat blobs.py)
+#           EOF
+          
+#           echo "Setting up environment variables..."
+#           echo "export STORAGE_ACCOUNT_A='$(STORAGE_ACCOUNT_A)'" >> ~/.bashrc
+#           echo "export STORAGE_ACCOUNT_B='$(STORAGE_ACCOUNT_B)'" >> ~/.bashrc
+#           echo "export CONNECTION_STRING_A='$(CONNECTION_STRING_A)'" >> ~/.bashrc
+#           echo "export CONNECTION_STRING_B='$(CONNECTION_STRING_B)'" >> ~/.bashrc
+#           echo "export SAS_TOKEN='$(SAS_TOKEN)'" >> ~/.bashrc
+#           source ~/.bashrc
+
+#           echo "Ensuring Python dependencies are installed..."
+#           sudo apt update && sudo apt install -y python3 python3-pip
+#           pip3 install --upgrade pip
+#           pip3 install azure-storage-blob python-dotenv
+
+#           echo "Executing blobs.py..."
+#           python3 /home/$(vmUser)/scripts/blobs.py
