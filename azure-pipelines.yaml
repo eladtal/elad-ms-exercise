@@ -63,7 +63,7 @@ stages:
           --parameters vmName=myVM adminUsername=$(vmUser) adminPassword='P@ssw0rd!' `
                        networkInterfaceName=myVMnic publicIpName=$(publicIpName) `
                        vnetName=elad-vnet subnetName=elad-subnet location=$(location)
-                       
+
 - stage: Execute_Blob_Copy
   displayName: Execute Blob Copy Script on VM
   dependsOn: Deploy_Resources
@@ -87,16 +87,15 @@ stages:
         runOptions: "inline"
         inline: |
           echo "Setting up environment variables..."
-          echo "export STORAGE_ACCOUNT_A=\"$(STORAGE_ACCOUNT_A)\"" >> ~/.bashrc
-          echo "export STORAGE_ACCOUNT_B=\"$(STORAGE_ACCOUNT_B)\"" >> ~/.bashrc
+          echo "export STORAGE_ACCOUNT_A='$(STORAGE_ACCOUNT_A)'" >> ~/.bashrc
+          echo "export STORAGE_ACCOUNT_B='$(STORAGE_ACCOUNT_B)'" >> ~/.bashrc
           echo "export CONNECTION_STRING_A=\"$(CONNECTION_STRING_A)\"" >> ~/.bashrc
           echo "export CONNECTION_STRING_B=\"$(CONNECTION_STRING_B)\"" >> ~/.bashrc
           echo "export SAS_TOKEN=\"$(SAS_TOKEN)\"" >> ~/.bashrc
           source ~/.bashrc
 
           echo "Verifying environment variables..."
-          echo "CONNECTION_STRING_A=\"$CONNECTION_STRING_A\""
-          echo "SAS_TOKEN=\"$SAS_TOKEN\""
+          printenv | grep CONNECTION_STRING
 
           echo "Executing blobs.py..."
           python3 /home/$(vmUser)/scripts/blobs.py

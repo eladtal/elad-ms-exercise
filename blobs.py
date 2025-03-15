@@ -3,19 +3,29 @@ from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
 
 STORAGE_ACCOUNT_A = os.getenv("STORAGE_ACCOUNT_A")
 STORAGE_ACCOUNT_B = os.getenv("STORAGE_ACCOUNT_B")
+CONNECTION_STRING_A = os.getenv("CONNECTION_STRING_A", "").strip()
+CONNECTION_STRING_B = os.getenv("CONNECTION_STRING_B", "").strip()
 CONTAINER_NAME = os.getenv("CONTAINER_NAME", "container1")
+SAS_TOKEN = os.getenv("SAS_TOKEN", "").strip()
 
-CONNECTION_STRING_A = os.getenv("CONNECTION_STRING_A")
-CONNECTION_STRING_B = os.getenv("CONNECTION_STRING_B")
-SAS_TOKEN = os.getenv("SAS_TOKEN")
+if not CONNECTION_STRING_A:
+    raise ValueError("ERROR: CONNECTION_STRING_A is missing or empty!")
+
+if not CONNECTION_STRING_B:
+    raise ValueError("ERROR: CONNECTION_STRING_B is missing or empty!")
+
+if not SAS_TOKEN:
+    raise ValueError("ERROR: SAS_TOKEN is missing or empty!")
+
+blob_service_client_a = BlobServiceClient.from_connection_string(CONNECTION_STRING_A)
+blob_service_client_b = BlobServiceClient.from_connection_string(CONNECTION_STRING_B)
+
 
 if SAS_TOKEN:
     SAS_TOKEN = SAS_TOKEN.strip()
     if not SAS_TOKEN.startswith("?"):
         SAS_TOKEN = "?" + SAS_TOKEN
 
-blob_service_client_a = BlobServiceClient.from_connection_string(CONNECTION_STRING_A)
-blob_service_client_b = BlobServiceClient.from_connection_string(CONNECTION_STRING_B)
 
 container_client_a = blob_service_client_a.get_container_client(CONTAINER_NAME)
 container_client_b = blob_service_client_b.get_container_client(CONTAINER_NAME)
