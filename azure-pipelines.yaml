@@ -66,39 +66,19 @@ stages:
 
 - stage: Execute_Blob_Copy
   displayName: Execute Blob Copy Script on VM
-  dependsOn: Deploy_Resources
   jobs:
-  - job: CopyAndRunScript
-    displayName: Copy and Execute Blob Copy Script on Azure VM
+  - job: RunBlobCopy
+    displayName: Run Blob Copy Script on Azure VM
     steps:
-
-    - task: CopyFilesOverSSH@0
-      displayName: "Copy blobs.py to VM"
-      inputs:
-        sshEndpoint: "sshvm"
-        sourceFolder: "$(Build.SourcesDirectory)"
-        contents: "blobs.py"
-        targetFolder: "/home/$(vmUser)/scripts"
-
+    
     - task: SSH@0
       displayName: "Execute Blob Copy Script on VM"
       inputs:
         sshEndpoint: "sshvm"
         runOptions: "inline"
         inline: |
-          echo "Setting up environment variables..."
-          echo "export STORAGE_ACCOUNT_A='$(STORAGE_ACCOUNT_A)'" >> ~/.bashrc
-          echo "export STORAGE_ACCOUNT_B='$(STORAGE_ACCOUNT_B)'" >> ~/.bashrc
-          echo "export CONNECTION_STRING_A=\"$(CONNECTION_STRING_A)\"" >> ~/.bashrc
-          echo "export CONNECTION_STRING_B=\"$(CONNECTION_STRING_B)\"" >> ~/.bashrc
-          echo "export SAS_TOKEN=\"$(SAS_TOKEN)\"" >> ~/.bashrc
-          source ~/.bashrc
-
-          echo "Verifying environment variables..."
-          printenv | grep CONNECTION_STRING
-
-          echo "Executing blobs.py..."
-          python3 /home/$(vmUser)/scripts/blobs.py
+          echo "Executing blobs.py on the VM..."
+          python3 /home/azureUser/scripts/blobs.py
 
 # - stage: Execute_Blob_Copy
 #   displayName: Execute Blob Copy Script on VM
