@@ -61,14 +61,15 @@ pool:
   name: elad-pc
 
 variables:
+  - group: StorageSecrets
   azureServiceConnection: 'elad-service-connect'
   resourceGroup: 'elad-rg'
   location: 'eastus'
   storageTemplate: 'storage-template.json'
   vmTemplate: 'vm-template.json'
   publicIpName: 'elad-public-ip'
-  vmUser: 'azureUser'  # Change if needed
-  vmPublicIp: 'YOUR_VM_PUBLIC_IP'  # Replace with the actual VM public IP
+  vmUser: 'azureUser'  
+  vmPublicIp: '172.190.211.170'
 
 stages:
 - stage: Deploy_Resources
@@ -125,8 +126,20 @@ stages:
         sshEndpoint: "AzureVM-SSH"  # Configure this in Azure DevOps Service Connections
         runOptions: "inline"
         inline: |
-          echo "Connecting to Azure VM..."
+          echo "Copying script to VM..."
+          scp blobs.py $(vmUser)@$(vmPublicIp):/home/$(vmUser)/blobs.py
+          
+          echo "Setting up environment variables..."
+          echo "export STORAGE_ACCOUNT_A=$(STORAGE_ACCOUNT_A)" >> ~/.bashrc
+          echo "export STORAGE_ACCOUNT_B=$(STORAGE_ACCOUNT_B)" >> ~/.bashrc
+          echo "export CONNECTION_STRING_A=$(CONNECTION_STRING_A)" >> ~/.bashrc
+          echo "export CONNECTION_STRING_B=$(CONNECTION_STRING_B)" >> ~/.bashrc
+          echo "export SAS_TOKEN=$(SAS_TOKEN)" >> ~/.bashrc
+          source ~/.bashrc
+
+          echo "Installing dependencies..."
           python3 -m pip install --upgrade pip
           pip3 install azure-storage-blob python-dotenv
+
           echo "Executing blobs.py..."
           python3 /home/$(vmUser)/blobs.py
