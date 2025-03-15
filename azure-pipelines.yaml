@@ -74,7 +74,7 @@ stages:
     - task: CopyFilesOverSSH@0
       displayName: "Copy blobs.py to VM"
       inputs:
-        sshEndpoint: "AzureVM-SSH"
+        sshEndpoint: "sshvm"
         sourceFolder: "$(Build.SourcesDirectory)"
         contents: "blobs.py"
         targetFolder: "/home/$(vmUser)/scripts"
@@ -82,7 +82,7 @@ stages:
     - task: SSH@0
       displayName: "Execute Blob Copy Script on VM"
       inputs:
-        sshEndpoint: "AzureVM-SSH"
+        sshEndpoint: "sshvm"
         runOptions: "inline"
         inline: |
           echo "Setting up environment variables..."
