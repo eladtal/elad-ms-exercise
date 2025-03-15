@@ -24,45 +24,45 @@ variables:
     value: '172.190.211.170'
 
 stages:
-# - stage: Deploy_Resources
-#   displayName: Deploy Storage Accounts & VM
-#   jobs:
-#   - job: Deploy
-#     displayName: Deploy Storage and VM
-#     steps:
+- stage: Deploy_Resources
+  displayName: Deploy Storage Accounts & VM
+  jobs:
+  - job: Deploy
+    displayName: Deploy Storage and VM
+    steps:
     
-#     - task: AzureCLI@2
-#       displayName: "Login to Azure"
-#       inputs:
-#         azureSubscription: $(azureServiceConnection)
-#         scriptType: pscore
-#         scriptLocation: inlineScript
-#         inlineScript: |
-#           az account show  # Verify Azure authentication
+    - task: AzureCLI@2
+      displayName: "Login to Azure"
+      inputs:
+        azureSubscription: $(azureServiceConnection)
+        scriptType: pscore
+        scriptLocation: inlineScript
+        inlineScript: |
+          az account show  # Verify Azure authentication
 
-#     - task: AzureCLI@2
-#       displayName: "Deploy Storage Accounts"
-#       inputs:
-#         azureSubscription: $(azureServiceConnection)
-#         scriptType: pscore
-#         scriptLocation: inlineScript
-#         inlineScript: |
-#           az deployment group create --resource-group $(resourceGroup) `
-#           --template-file $(storageTemplate) `
-#           --parameters storageAccount1Name=eladstorageacct12345 storageAccount2Name=eladstorageacct67890 location=$(location)
+    - task: AzureCLI@2
+      displayName: "Deploy Storage Accounts"
+      inputs:
+        azureSubscription: $(azureServiceConnection)
+        scriptType: pscore
+        scriptLocation: inlineScript
+        inlineScript: |
+          az deployment group create --resource-group $(resourceGroup) `
+          --template-file $(storageTemplate) `
+          --parameters storageAccount1Name=eladstorageacct12345 storageAccount2Name=eladstorageacct67890 location=$(location)
 
-#     - task: AzureCLI@2
-#       displayName: "Deploy Virtual Machine"
-#       inputs:
-#         azureSubscription: $(azureServiceConnection)
-#         scriptType: pscore
-#         scriptLocation: inlineScript
-#         inlineScript: |
-#           az deployment group create --resource-group $(resourceGroup) `
-#           --template-file $(vmTemplate) `
-#           --parameters vmName=myVM adminUsername=$(vmUser) adminPassword='P@ssw0rd!' `
-#                        networkInterfaceName=myVMnic publicIpName=$(publicIpName) `
-#                        vnetName=elad-vnet subnetName=elad-subnet location=$(location)
+    - task: AzureCLI@2
+      displayName: "Deploy Virtual Machine"
+      inputs:
+        azureSubscription: $(azureServiceConnection)
+        scriptType: pscore
+        scriptLocation: inlineScript
+        inlineScript: |
+          az deployment group create --resource-group $(resourceGroup) `
+          --template-file $(vmTemplate) `
+          --parameters vmName=myVM adminUsername=$(vmUser) adminPassword='P@ssw0rd!' `
+                       networkInterfaceName=myVMnic publicIpName=$(publicIpName) `
+                       vnetName=elad-vnet subnetName=elad-subnet location=$(location)
 
 - stage: Execute_Blob_Copy
   displayName: Execute Blob Copy Script on VM
