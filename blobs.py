@@ -1,5 +1,5 @@
 import os
-from azure.storage.blob import BlobServiceClient, BlobClient, ContainerClient
+from azure.storage.blob import BlobServiceClient
 
 STORAGE_ACCOUNT_A = os.getenv("STORAGE_ACCOUNT_A")
 STORAGE_ACCOUNT_B = os.getenv("STORAGE_ACCOUNT_B")
